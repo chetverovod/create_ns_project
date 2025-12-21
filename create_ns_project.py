@@ -4,11 +4,14 @@
 import os
 import argparse
 
+__version__ = "0.1.0"
+
 def generate_tree_string(project_name, ns3_dir_name):
     """Generates an ASCII representation of the project tree."""
     tree = f"""
 {project_name}/
 ├── {ns3_dir_name}/
+│   ├── contrib/
 │   ├── src/
 │   │   └── my-module-1/
 │   └── scratch/
@@ -42,6 +45,7 @@ def create_project_structure(project_name, ns3_version, output_path):
     dirs_to_create_template = [
         '',
         f'{ns3_dir_template}/src/my-module-1',
+        f'{ns3_dir_template}/contrib',
         f'{ns3_dir_template}/scratch',
         'simulations',
         'results/scenario-1',
@@ -61,6 +65,7 @@ def create_project_structure(project_name, ns3_version, output_path):
         '': 'Root of the simulation project.',
         f'{ns3_dir_template}': f'Placeholder for NS-{ns3_version} simulator source code. Clone or link the NS-3 repository here.',
         f'{ns3_dir_template}/src': 'Directory for your custom NS-3 modules.',
+        f'{ns3_dir_template}/contrib': 'Directory for your custom NS-3 modules.',
         f'{ns3_dir_template}/src/my-module-1': 'Directory for your custom NS-3 module 1.',
         f'{ns3_dir_template}/scratch': 'Directory for quick, single-file simulation tests (if using NS-3\'s scratch directory).',
         'simulations': 'C++ scripts for running your main simulation scenarios.',
@@ -133,6 +138,7 @@ __pycache__/
     # after the about_folder.md file is created.
     empty_dirs_template = {
         f'{ns3_dir_template}/src/my-module-1',
+        f'{ns3_dir_template}/contrib',
         f'{ns3_dir_template}/scratch'
     }
     empty_dirs = {d.replace(ns3_dir_template, ns3_dir_name) for d in empty_dirs_template}
@@ -179,12 +185,15 @@ def main():
     """Main function to parse command-line arguments."""
     parser = argparse.ArgumentParser(
         description='Utility to create a standard directory structure for an NS-3 based project.',
-        epilog="""Example usage:
+        epilog=f"""Example usage:
   # Create project 'my-proj' with NS-3.45 in the '~/projects' directory
   python create_ns3_project.py --project-name my-proj --output-path ~/projects --ns3-version 3.45
   
   # Create project 'another-proj' with the default NS-3 version in the './work' directory
   python create_ns3_project.py -p another-proj -o ./work
+
+  # Show the utility version
+  python create_ns3_project.py --version
 """
     )
     
@@ -206,7 +215,15 @@ def main():
         '--ns3-version', '-v',
         type=str,
         default='3.45', # Changed default to a more realistic X.XX format
-        help='The NS-3 version to use for the project directory (e.g., 4.12). Default is "3.45".'
+        help='The NS-3 version to use for the project directory (e.g., 3.46). Default is "3.45".'
+    )
+
+    # Добавляем аргумент для отображения версии
+    parser.add_argument(
+        '--version', '-V',
+        action='version',
+        version=f'%(prog)s {__version__}',
+        help='Show program\'s version number and exit.'
     )
     
     args = parser.parse_args()
@@ -220,3 +237,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

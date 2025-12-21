@@ -4,17 +4,17 @@
 import os
 import argparse
 
-__version__ = "0.1.0"
+__version__ = "0.3.0" # Updated version
 
-def generate_tree_string(project_name, ns3_dir_name):
-    """Generates an ASCII representation of the project tree."""
+def generate_tree_string(project_name):
+    """
+    Generates an ASCII representation of the project tree.
+    The tree is now independent of the NS-3 version and has empty contrib/src folders.
+    """
     tree = f"""
 {project_name}/
-├── {ns3_dir_name}/
-│   ├── contrib/
-│   ├── src/
-│   │   └── my-module-1/
-│   └── scratch/
+├── contrib/
+├── src/
 ├── simulations/
 ├── results/
 │   ├── scenario-1/
@@ -27,26 +27,18 @@ def generate_tree_string(project_name, ns3_dir_name):
 """
     return tree.strip()
 
-def create_project_structure(project_name, ns3_version, output_path):
+def create_project_structure(project_name, output_path):
     """
-    Creates a standardized directory structure for an NS-3 based project
-    in a specified output directory.
+    Creates a standardized directory structure for an NS-3 based project.
+    The structure is designed to have its `src` and `contrib` folders copied
+    into an existing NS-3 source tree.
     """
-    ns3_dir_template = 'ns-3.xx'
-    ns3_dir_name = f'ns-{ns3_version}'
-    
-    # Construct the full path for the project
-    project_full_path = os.path.abspath(os.path.join(output_path, project_name))
-
-    print(f"Creating project structure for '{project_name}' with NS-3 version {ns3_version}...")
-    print(f"Project will be located at: {project_full_path}")
-
-    # --- 1. Define directory structure using a template ---
-    dirs_to_create_template = [
+    # --- 1. Define directory structure ---
+    # contrib and src are created empty, as requested.
+    dirs_to_create = [
         '',
-        f'{ns3_dir_template}/src/my-module-1',
-        f'{ns3_dir_template}/contrib',
-        f'{ns3_dir_template}/scratch',
+        'contrib',
+        'src',
         'simulations',
         'results/scenario-1',
         'results/scenario-2',
@@ -55,19 +47,13 @@ def create_project_structure(project_name, ns3_version, output_path):
         'doc'
     ]
     
-    # Replace the template with the actual version
-    dirs_to_create = [d.replace(ns3_dir_template, ns3_dir_name) for d in dirs_to_create_template]
-
-    # --- 2. Define content for files that will be created ---
+    # --- 2. Define content for files ---
     
     # Descriptions for about_folder.md files in each directory
-    about_descriptions_template = {
+    about_descriptions = {
         '': 'Root of the simulation project.',
-        f'{ns3_dir_template}': f'Placeholder for NS-{ns3_version} simulator source code. Clone or link the NS-3 repository here.',
-        f'{ns3_dir_template}/src': 'Directory for your custom NS-3 modules.',
-        f'{ns3_dir_template}/contrib': 'Directory for your custom NS-3 modules.',
-        f'{ns3_dir_template}/src/my-module-1': 'Directory for your custom NS-3 module 1.',
-        f'{ns3_dir_template}/scratch': 'Directory for quick, single-file simulation tests (if using NS-3\'s scratch directory).',
+        'contrib': 'Directory for your modules intended for the `contrib` folder of your NS-3 distribution.',
+        'src': 'Directory for your modules intended for the `src` folder of your NS-3 distribution.',
         'simulations': 'C++ scripts for running your main simulation scenarios.',
         'results': 'Directory for storing raw simulation results (e.g., .pcap, .dat files).',
         'results/scenario-1': 'Results for the first simulation scenario.',
@@ -76,15 +62,9 @@ def create_project_structure(project_name, ns3_version, output_path):
         'plots': 'Final plots and figures for reports and publications.',
         'doc': 'Project documentation, notes, and descriptions.'
     }
-    
-    # Replace the template in keys with the actual version
-    about_descriptions = {
-        k.replace(ns3_dir_template, ns3_dir_name): v 
-        for k, v in about_descriptions_template.items()
-    }
 
     # Generate the tree representation for the README
-    tree_representation = generate_tree_string(project_name, ns3_dir_name)
+    tree_representation = generate_tree_string(project_name)
 
     file_contents = {
         'README.md': f"""# {project_name}
@@ -95,29 +75,30 @@ An NS-3 based simulation project.
 
 ```{tree_representation}```
 
+## Integration with NS-3
+
+This project does not contain the NS-3 source code. It provides a structure for your custom modules.
+
+1.  Develop your modules inside the `src/` and `contrib/` directories.
+2.  Copy the contents of the `src/` and `contrib/` directories from this project into the corresponding directories of your NS-3 distribution.
+3.  Reconfigure and build NS-3.
+4.  Run simulations from the `ns-3/` directory using the scripts from the `simulations/` folder.
+
 ## Directory Descriptions
 
-Each directory contains an `about_folder.md` file with a more specific description.
-- `{ns3_dir_name}/`: Placeholder for NS-{ns3_version} simulator source code or link.
-- `simulations/`: C++ scripts for running simulation scenarios.
-- `results/`: Directory for storing raw simulation results.
-- `analysis/`: Python scripts for data processing and plotting.
-- `plots/`: Final plots and figures for reports and publications.
+- `contrib/`: Modules best placed in the `contrib` folder of NS-3.
+- `src/`: Modules best placed in the `src` folder of NS-3.
+- `simulations/`: Scripts for running simulation scenarios.
+- `results/`: Directory for storing raw simulation data.
+- `analysis/`: Scripts for data analysis.
+- `plots/`: Directory for final plots.
 - `doc/`: Project documentation.
-
-## Quick Start
-
-1.  Place NS-{ns3_version} source code or link to it into the `{ns3_dir_name}/` directory.
-2.  Configure and build NS-3. Consult the official NS-3 documentation for your specific version, as the build system may have changed (e.g., using CMake).
-3.  Write your simulation scripts in the `simulations/` directory.
-4.  Run your simulations from the `{ns3_dir_name}/` directory, pointing to scripts in `../simulations/`.
-5.  Process the results using scripts in the `analysis/` directory.
 """,
-        '.gitignore': f"""# Ignore NS-{ns3_version} build artifacts
-{ns3_dir_name}/build/
-{ns3_dir_name}/.lock-waf_*
-{ns3_dir_name}/c4che/
-{ns3_dir_name}/.confcheck_*
+        '.gitignore': f"""# Ignore simulation results
+results/
+*.pcap
+*.dat
+*.tr
 
 # Ignore temporary files and OS files
 *~
@@ -135,20 +116,17 @@ __pycache__/
     }
     
     # Define directories that should remain empty (and thus need a .gitkeep)
-    # after the about_folder.md file is created.
-    empty_dirs_template = {
-        f'{ns3_dir_template}/src/my-module-1',
-        f'{ns3_dir_template}/contrib',
-        f'{ns3_dir_template}/scratch'
+    # contrib and src are now intentionally empty.
+    empty_dirs = {
+        'contrib',
+        'src',
     }
-    empty_dirs = {d.replace(ns3_dir_template, ns3_dir_name) for d in empty_dirs_template}
 
     # --- 3. Create directories and files ---
     try:
-        # Create the project's root directory at the specified path
+        project_full_path = os.path.abspath(os.path.join(output_path, project_name))
         os.makedirs(project_full_path, exist_ok=False)
         
-        # Create all subdirectories and their special files
         for dir_path in dirs_to_create:
             full_dir_path = os.path.join(project_full_path, dir_path)
             
@@ -174,7 +152,7 @@ __pycache__/
 
         print(f"\n✅ Project '{project_name}' created successfully!")
         print(f"📁 Navigate to the directory: cd {project_full_path}")
-        print("📖 Read README.md and about_folder.md files for more details.")
+        print("📖 Read README.md for instructions on integrating with NS-3.")
 
     except FileExistsError:
         print(f"❌ Error: A directory named '{project_full_path}' already exists.")
@@ -186,14 +164,11 @@ def main():
     parser = argparse.ArgumentParser(
         description='Utility to create a standard directory structure for an NS-3 based project.',
         epilog=f"""Example usage:
-  # Create project 'my-proj' with NS-3.45 in the '~/projects' directory
-  python create_ns3_project.py --project-name my-proj --output-path ~/projects --ns3-version 3.45
+  # Create project 'my-proj' in the '~/projects' directory
+  python create_ns_project.py --project-name my-proj --output-path ~/projects
   
-  # Create project 'another-proj' with the default NS-3 version in the './work' directory
-  python create_ns3_project.py -p another-proj -o ./work
-
-  # Show the utility version
-  python create_ns3_project.py --version
+  # Create project 'another-proj' in the current directory
+  python create_ns_project.py -p another-proj -o .
 """
     )
     
@@ -211,14 +186,7 @@ def main():
         help='The directory where the project folder will be created. Defaults to the current directory.'
     )
     
-    parser.add_argument(
-        '--ns3-version', '-v',
-        type=str,
-        default='3.45', # Changed default to a more realistic X.XX format
-        help='The NS-3 version to use for the project directory (e.g., 3.46). Default is "3.45".'
-    )
-
-    # Добавляем аргумент для отображения версии
+    # Add argument to display version
     parser.add_argument(
         '--version', '-V',
         action='version',
@@ -233,8 +201,7 @@ def main():
         print(f"❌ Error: The specified output path '{os.path.abspath(args.output_path)}' is not a valid directory.")
         return
 
-    create_project_structure(args.project_name, args.ns3_version, args.output_path)
+    create_project_structure(args.project_name, args.output_path)
 
 if __name__ == '__main__':
     main()
-

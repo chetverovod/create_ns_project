@@ -17,8 +17,6 @@ def generate_tree_string(project_name):
 ├── src/
 ├── simulations/
 ├── results/
-│   ├── scenario-1/
-│   └── scenario-2/
 ├── analysis/
 ├── plots/
 ├── doc/
@@ -40,8 +38,7 @@ def create_project_structure(project_name, output_path):
         'contrib',
         'src',
         'simulations',
-        'results/scenario-1',
-        'results/scenario-2',
+        'results',
         'analysis',
         'plots',
         'doc'
@@ -56,8 +53,6 @@ def create_project_structure(project_name, output_path):
         'src': 'Directory for your modules intended for the `src` folder of your NS-3 distribution.',
         'simulations': 'C++ scripts for running your main simulation scenarios.',
         'results': 'Directory for storing raw simulation results (e.g., .pcap, .dat files).',
-        'results/scenario-1': 'Results for the first simulation scenario.',
-        'results/scenario-2': 'Results for the second simulation scenario.',
         'analysis': 'Python scripts for data processing, analysis, and plotting.',
         'plots': 'Final plots and figures for reports and publications.',
         'doc': 'Project documentation, notes, and descriptions.'

@@ -31,8 +31,35 @@ create_ns3_project.py --project-name my-proj --output-path ~/projects --ns3-vers
 another-proj -o ./work # Show the utility version python create_ns3_project.py --version
 
 
+## nsbt utility 
+usage: nsbt.py [-h] --ns3path NS3PATH [--timeout TIMEOUT] {run,help} ...
 
+NS-3 Batch Tester utility. Runs a sequence of NS-3 simulator tests based on a JSON configuration file.
 
+The configuration file contains list of test and arg for them.
+**Example:**
+```
+{
+  "test_1": {
+    "test_name": "hello-simulator",
+    "arguments": {}
+  },
+  "test_2": {
+    "test_name": "second",
+    "arguments": {
+      "nCsma": 10,
+      "verbose": true
+    }
+  },
+  "test_3": {
+    "test_name": "fourth",
+    "arguments": {
+      "parameter": "value"
+    }
+  }
+}
+
+```
 
 
 

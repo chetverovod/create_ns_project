@@ -53,50 +53,6 @@ class NS3BatchTester:
 
         return cmd
 
-    def _build_command3(self, test_config):
-        """Создает команду запуска на основе конфигурации теста."""
-        test_name = test_config.get('test_name')
-        if not test_name:
-            raise ValueError("Missing 'test_name' in test configuration")
-
-        cmd = [self.ns3_executable, 'run', test_name]
-        arguments = test_config.get('arguments', [])
-
-        # Обработка, если arguments - это словарь (как в текущем JSON)
-        if isinstance(arguments, dict):
-            for name, value in arguments.items():
-                cmd.append(f"--{name}={value}")
-
-        # Обработка, если arguments - это список объектов (как в первом примере)
-        elif isinstance(arguments, list):
-            for arg in arguments:
-                arg_name = arg.get('name')
-                arg_value = arg.get('value')
-                if arg_name is not None and arg_value is not None:
-                    cmd.append(f"--{arg_name}={arg_value}")
-
-        return cmd
-
-    def _build_command2(self, test_config):
-        """Создает команду запуска на основе конфигурации теста."""
-        test_name = test_config.get('test_name')
-        if not test_name:
-            raise ValueError("Missing 'test_name' in test configuration")
-
-        # Базовая команда: ./ns3 run <test_name>
-        cmd = [self.ns3_executable, 'run', test_name]
-
-        # Добавление аргументов теста
-        # Предполагается формат: ./ns3 run test --arg1=value1 --arg2=value2
-        arguments = test_config.get('arguments', [])
-        for arg in arguments:
-            arg_name = arg.get('name')
-            arg_value = arg.get('value')
-            if arg_name is not None and arg_value is not None:
-                cmd.append(f"--{arg_name}={arg_value}")
-
-        return cmd
-
     def run_test(self, test_id, test_config):
         """Запускает один тест с обработкой таймаута и ошибок."""
         print(f"\n{'='*60}")
@@ -109,50 +65,6 @@ class NS3BatchTester:
         # ИЗМЕНЕНО: Выводим команду в нужном формате с кавычками
         # cmd[0] - путь к ns3, cmd[1] - 'run', cmd[2] - 'имя_скрипта аргументы'
         print(f"Command: {cmd[0]} {cmd[1]} \"{cmd[2]}\"")
-
-        try:
-            # Запуск процесса. 
-            # cwd=self.ns3_path важен, так как ns3 скрипт ожидает запуск из корневой директории симулятора
-            process = subprocess.Popen(
-                cmd,
-                cwd=self.ns3_path,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
-
-            try:
-                # Ожидание завершения с таймаутом
-                stdout, stderr = process.communicate(timeout=self.timeout)
-                
-                if process.returncode == 0:
-                    print(f"[SUCCESS] Test {test_id} passed.")
-                    if stdout:
-                        print("Output:", stdout[-500:]) # Вывод последних 500 символов
-                else:
-                    print(f"[FAILURE] Test {test_id} failed with return code {process.returncode}.")
-                    if stderr:
-                        print("Error Log:", stderr[-500:])
-                    if stdout:
-                        print("Output:", stdout[-500:])
-
-            except subprocess.TimeoutExpired:
-                # Обработка зависания
-                process.kill()
-                print(f"[TIMEOUT] Test {test_id} hung and was killed after {self.timeout} seconds.")
-
-        except Exception as e:
-            print(f"[ERROR] Unexpected error running test {test_id}: {str(e)}")
-
-    def run_test2(self, test_id, test_config):
-        """Запускает один тест с обработкой таймаута и ошибок."""
-        print(f"\n{'='*60}")
-        print(f"Starting Test ID: {test_id}")
-        print(f"Test Name: {test_config.get('test_name')}")
-        print(f"{'='*60}")
-
-        cmd = self._build_command(test_config)
-        print(f"Command: {' '.join(cmd)}")
 
         try:
             # Запуск процесса. 
